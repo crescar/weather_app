@@ -1,0 +1,51 @@
+version: '3.1'
+
+services:
+  
+  db:
+    image: postgres:15
+    container_name: weader-app-db
+    ports:
+      - "5432:5432"
+    env_file: enviroments/.env
+    volumes:
+      - weader-app-db:/var/lib/postgresql/data/
+      - ./initialDB/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - weader-app-network
+
+  redis:
+    image: redis:6
+    container_name: weader-app-redis
+    ports:
+      - "6379:6379"
+    env_file: enviroments/.env
+    volumes:
+      - redis-data:/data
+    networks:
+      - weader-app-network
+
+#storage:
+##build: 
+###context: .
+###dockerfile: donate_dish/apps/storage/Dockerfile
+##container_name: storage
+##depends_on:
+###- db
+###- redis
+###- rabbitmq
+##env_file: 'enviroments/.env'
+##networks:
+##  - weader-app-network
+
+
+
+
+  
+volumes:
+  weader-app-db:
+  redis-data:
+
+networks:
+  weader-app-network:
+    driver: bridge
