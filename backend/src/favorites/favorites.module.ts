@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { FavoritesController } from './favorites.controller';
 import { FavoritesService } from './favorites.service';
+import { FavoritesEntity } from '@app/common/dbEntities/favorites.entity';
 
 @Module({
+  imports:[
+    TypeOrmModule.forFeature([FavoritesEntity])
+  ],
   controllers: [FavoritesController],
-  providers: [FavoritesService]
+  providers: [FavoritesService],
+  exports: [FavoritesService]
 })
 export class FavoritesModule {}

@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
-import { StandardResponse } from '@app/common/index';
+import { StandardResponse } from '@app/common';
 import { LoginResponse } from './responses/login.response';
 import { RegisterResponse } from './responses/register.response';
 

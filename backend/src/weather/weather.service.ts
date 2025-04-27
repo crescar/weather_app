@@ -1,19 +1,36 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { StandardResponse } from '@app/common/index';
+import { StandardResponse } from '@app/common';
 import { AutocompleteResponse } from './responses/autocomple.response';
 import { WeatherResponse } from './responses/weather.response';
-
+import { FavoritesService } from 'src/favorites/favorites.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 
 @Injectable()
 export class WeatherService {
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly favoritesService: FavoritesService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache
+  ) {}
 
-  async getWeather(city: string):Promise<StandardResponse<WeatherResponse>> {
+  async getWeather(userId:number, city: string):Promise<StandardResponse<WeatherResponse>> {
     const response = new StandardResponse<WeatherResponse>(200, "Información obtenida correctamente")
+    const hasCityId = city.split("id:")[1]
+    const isFavorite = await this.favoritesService.favoriteAlredyAsociated(userId,city ,hasCityId ? +hasCityId : undefined)
+    const cachedData: any = await this.getDataCaching(`${userId}-${city}`)
+    if (cachedData) {
+      response.data = {
+        ...cachedData,
+        isFavorite: isFavorite
+      }
+      return response
+    }
     try {
       const {data} = await firstValueFrom(this.httpService.get(`current.json?q=${city}`))
       const weather:WeatherResponse = {
@@ -29,9 +46,11 @@ export class WeatherService {
         condition: data.current.condition.text,
         humidity: data.current.humidity,
         cloud: data.current.cloud,
-        windKph: data.current.wind_kph
+        windKph: data.current.wind_kph,
+        isFavorite: isFavorite
       }
       response.data = weather
+      await this.cacheManager.set(`${userId}-${city}`, weather,60000)
       return response
     } catch (error) {
       response.statusCode = 400
@@ -43,6 +62,10 @@ export class WeatherService {
 
   async autocomplete(city: string):Promise<StandardResponse<AutocompleteResponse[]>> {
     const response = new StandardResponse<AutocompleteResponse[]>(200, "Información obtenida correctamente")
+    const cachedData: any = await this.getDataCaching(`autocomplete-${city}`)
+    if(cachedData){
+      return cachedData
+    }
     try {
       const weather = await firstValueFrom(this.httpService.get(`search.json?q=${city}`))
       const data:AutocompleteResponse[] = weather.data.map((item: any) => {
@@ -54,6 +77,7 @@ export class WeatherService {
         }
       })
       response.data = data
+      await this.cacheManager.set(`autocomplete-${city}`, response ,60000)
       return response
     } catch (error) {
       response.statusCode = 400
@@ -63,5 +87,7 @@ export class WeatherService {
     }
   }
 
-
+  async getDataCaching(key:string) {
+    return await this.cacheManager.get(key)
+  }
 }

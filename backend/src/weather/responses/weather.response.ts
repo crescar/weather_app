@@ -12,4 +12,5 @@ export class WeatherResponse {
   humidity: number;
   cloud: number;
   windKph: number;
+  isFavorite: boolean;
 }

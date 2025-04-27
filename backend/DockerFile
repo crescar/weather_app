@@ -1,0 +1,11 @@
+FROM node:20
+
+WORKDIR /usr/src/app 
+
+RUN pnpm install
+
+COPY backend ./
+
+RUN pnpm run build 
+
+CMD ["node", "dist/main"]

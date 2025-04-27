@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { WeatherController } from './weather.controller';
 import { WeatherService } from './weather.service';
 import { HttpModule } from '@nestjs/axios';
+import { FavoritesModule } from 'src/favorites/favorites.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { HttpModule } from '@nestjs/axios';
           lang:'es'
         }
       }),
-    })
+    }),
+    FavoritesModule
   ],
   controllers: [WeatherController],
   providers: [WeatherService]

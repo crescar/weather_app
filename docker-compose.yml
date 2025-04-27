@@ -25,22 +25,21 @@ services:
     networks:
       - weader-app-network
 
-#storage:
-##build: 
-###context: .
-###dockerfile: donate_dish/apps/storage/Dockerfile
-##container_name: storage
-##depends_on:
-###- db
-###- redis
-###- rabbitmq
-##env_file: 'enviroments/.env'
-##networks:
-##  - weader-app-network
-
-
-
-
+  backend:
+    ports:
+      - "3000:3000"
+      - "80:3000"
+      - "443:3000"
+    build: 
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: backend
+    depends_on:
+      - db
+      - redis
+    env_file: 'enviroments/.env'
+    networks:
+      - weader-app-network
   
 volumes:
   weader-app-db:

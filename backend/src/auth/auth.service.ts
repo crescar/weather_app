@@ -6,8 +6,7 @@ import { LoginDto } from './dtos/login.dto';
 import { LoginResponse } from './responses/login.response';
 import { RegisterResponse } from './responses/register.response';
 import { RegisterDto } from './dtos/register.dto';
-import { UserEntity, StandardResponse, hashingPassword, comparePass } from '@app/common/index';
-
+import { UserEntity, StandardResponse, hashingPassword, comparePass } from '@app/common';
 
 @Injectable()
 export class AuthService {
