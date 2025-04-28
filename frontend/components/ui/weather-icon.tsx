@@ -1,6 +1,7 @@
 import { Cloud, CloudFog, CloudLightning, CloudMoon, CloudRain, CloudSnow, CloudSun, Moon, Sun } from "lucide-react"
 import type { WeatherData } from "@/types"
 import { useWeather } from "@/hooks/use-weather"
+import Image from "next/image"
 
 interface WeatherIconProps {
   weatherData?: WeatherData
@@ -9,16 +10,13 @@ interface WeatherIconProps {
 }
 
 export function WeatherIcon({ weatherData, iconType, size = "lg" }: WeatherIconProps) {
-  const { isNightTime } = useWeather()
 
-  // Tamaños de iconos según el prop size
   const iconSizes = {
     sm: "h-4 w-4",
     md: "h-8 w-8",
     lg: "h-16 w-16",
   }
 
-  // Si se proporciona un tipo de icono específico (para ciudades principales)
   if (iconType) {
     switch (iconType) {
       case "rain":
@@ -45,23 +43,6 @@ export function WeatherIcon({ weatherData, iconType, size = "lg" }: WeatherIconP
     return <Moon className={`${iconSizes[size]} text-blue-300`} />
   }
 
-  // Determinar el icono basado en los datos del clima
-  const condition = weatherData.weather[0].main.toLowerCase()
-  const isNight = isNightTime(weatherData.sys.sunrise, weatherData.sys.sunset, weatherData.dt)
+  return <Image src={weatherData.icon} alt="Weather Icon" className={`${iconSizes[size]} text-blue-300`} width={64} height={64} />
 
-  if (condition.includes("rain") || condition.includes("drizzle")) {
-    return <CloudRain className={`${iconSizes[size]} text-blue-400`} />
-  } else if (condition.includes("cloud")) {
-    return isNight ? (
-      <CloudMoon className={`${iconSizes[size]} text-gray-400`} />
-    ) : (
-      <Cloud className={`${iconSizes[size]} text-gray-400`} />
-    )
-  } else {
-    return isNight ? (
-      <Moon className={`${iconSizes[size]} text-blue-300`} />
-    ) : (
-      <Sun className={`${iconSizes[size]} text-yellow-400`} />
-    )
-  }
 }

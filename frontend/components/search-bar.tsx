@@ -1,23 +1,30 @@
 "use client"
 
 import type React from "react"
-
 import { useRef, useState, useEffect } from "react"
 import { Search, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
-import { popularCities } from "@/data/mock-data"
+import { useWeather } from "@/hooks/use-weather"
 
 interface SearchBarProps {
-  onSearch: (city: string) => void
-  isLoading?: boolean
+  searchCity: (city: string, id?: number) => void
+  loading?: boolean
 }
 
-export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
+interface CitySuggestion {
+  id: number
+  name: string
+  country: string
+  region: string
+}
+
+export function SearchBar({ searchCity, loading }: SearchBarProps) {
+  const { autocompleteCities } = useWeather()
   const [city, setCity] = useState("")
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<CitySuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -27,49 +34,39 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
       setSuggestions([])
       return
     }
-
-    // Simulación de sugerencias basadas en datos mock
-    const mockSuggestions = popularCities.filter((city) => city.toLowerCase().includes(query.toLowerCase()))
-
-    setSuggestions(mockSuggestions)
+    const getSuggestions = await autocompleteCities(query)
+    setSuggestions(getSuggestions)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setCity(value)
     setShowSuggestions(true)
-
-    // Clear previous timeout
     if (inputTimeout) clearTimeout(inputTimeout)
-
-    // Set new timeout to avoid too many requests
     const timeout = setTimeout(() => {
       fetchSuggestions(value)
-    }, 300)
-
+    }, 500)
     setInputTimeout(timeout as unknown as NodeJS.Timeout)
   }
 
-  const handleSelectCity = (selectedCity: string) => {
-    setCity(selectedCity)
-    onSearch(selectedCity)
+  const handleSelectCity = (selectedCity: string, name: string) => {
+    setCity(name)
+    searchCity(selectedCity, +(selectedCity.split(":")[1]))
     setShowSuggestions(false)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch(city)
+    searchCity(city)
     setShowSuggestions(false)
   }
 
-  // Clean up timeout on unmount
   useEffect(() => {
     return () => {
       if (inputTimeout) clearTimeout(inputTimeout)
     }
   }, [inputTimeout])
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
@@ -97,8 +94,8 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
             onFocus={() => setShowSuggestions(true)}
             className="flex-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
           />
-          <Button type="submit" disabled={isLoading || !city.trim()} className="bg-blue-600 hover:bg-blue-700">
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          <Button type="submit" disabled={loading || !city.trim()} className="bg-blue-600 hover:bg-blue-700">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </form>
 
@@ -109,12 +106,12 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
                 <CommandGroup>
                   {suggestions.map((suggestion) => (
                     <CommandItem
-                      key={suggestion}
-                      onSelect={() => handleSelectCity(suggestion)}
+                      key={suggestion.id}
+                      onSelect={() => handleSelectCity(`id:${suggestion.id}`, suggestion.name)}
                       className="cursor-pointer hover:bg-gray-700 text-gray-200"
                     >
                       <MapPin className="mr-2 h-4 w-4 text-gray-400" />
-                      {suggestion}
+                      {`${suggestion.name}, ${suggestion.country} - ${suggestion.region}`}
                     </CommandItem>
                   ))}
                 </CommandGroup>

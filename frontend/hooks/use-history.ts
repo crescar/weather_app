@@ -2,12 +2,11 @@
 
 import type { HistoryItem } from "@/types"
 import { useEffect, useState } from "react"
-import { toast } from "@/components/ui/use-toast"
+import { showToast } from "nextjs-toast-notify";
 
 export function useHistory() {
   const [history, setHistory] = useState<HistoryItem[]>([])
 
-  // Cargar historial al iniciar
   useEffect(() => {
     const savedHistory = localStorage.getItem("weatherHistory")
     if (savedHistory) {
@@ -19,51 +18,34 @@ export function useHistory() {
     }
   }, [])
 
-  // Guardar historial cuando cambie
   useEffect(() => {
     localStorage.setItem("weatherHistory", JSON.stringify(history))
   }, [history])
 
   const addToHistory = (
-    cityName: string,
-    countryCode: string | null,
-    stateValue: string | null,
-    countryShortCode: string,
+    city: string,
+    country: string,
+    region: string,
+    cityId?: number,
   ) => {
-    // Crear un ID único para el elemento del historial
-    const historyId = `${cityName}-${countryShortCode}-${Date.now()}`
-
-    // Crear el objeto de historial
+    const historyId = `${city}-${country}-${Date.now()}`
     const newHistoryItem: HistoryItem = {
       id: historyId,
-      city: cityName,
-      state: stateValue,
-      country: countryShortCode,
-      countryCode: countryCode,
-      countryName: null,
-      timestamp: Date.now(),
+      country: country,
+      city: city,
+      region: region,
+      createdAt: new Date().toISOString(),
+      ...(cityId ? { cityId } : {}),
     }
-
-    // Verificar si ya existe una entrada similar en el historial
-    const existingIndex = history.findIndex((item) => item.city === cityName && item.country === countryShortCode)
-
-    // Crear una copia del historial actual
+    const existingIndex = history.findIndex((item) => (item.city === city && item.country === country) || (item.cityId === cityId))
     const updatedHistory = [...history]
-
-    // Si existe, eliminar la entrada anterior
     if (existingIndex !== -1) {
       updatedHistory.splice(existingIndex, 1)
     }
-
-    // Añadir la nueva entrada al principio
     updatedHistory.unshift(newHistoryItem)
-
-    // Limitar el historial a 20 elementos
     if (updatedHistory.length > 20) {
       updatedHistory.pop()
     }
-
-    // Actualizar el estado
     setHistory(updatedHistory)
   }
 
@@ -72,19 +54,27 @@ export function useHistory() {
       const newHistory = prev.filter((item) => item.id !== itemId)
       return newHistory
     })
-
-    toast({
-      title: "Elemento eliminado",
-      description: "Se ha eliminado el elemento del historial",
+    showToast.success("Busqueda Eliminda del historial", {
+      duration: 4000,
+      progress: true,
+      position: "top-right",
+      transition: "bounceIn",
+      icon: '',
+      sound: true,
     })
   }
 
   const clearAllHistory = () => {
     setHistory([])
-    toast({
-      title: "Historial borrado",
-      description: "Se ha eliminado todo el historial de búsquedas",
+    showToast.success("Historial de busquedas eliminado", {
+      duration: 4000,
+      progress: true,
+      position: "top-right",
+      transition: "bounceIn",
+      icon: '',
+      sound: true,
     })
+    localStorage.removeItem("weatherHistory")
   }
 
   return {

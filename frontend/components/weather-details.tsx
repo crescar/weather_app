@@ -1,5 +1,5 @@
 "use client"
-
+import { useState } from "react"
 import type { WeatherData } from "@/types"
 import { Star, StarOff, Clock, CalendarClock, Cloud, Droplets, Wind } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -20,25 +20,17 @@ interface WeatherDetailsProps {
   weather: WeatherData | null
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  isFavorite: boolean
   onAddToFavorites: () => void
-  onRemoveFromFavorites: () => void
-  showQuickAddFavorite: boolean
 }
 
 export function WeatherDetails({
   weather,
   isOpen,
   onOpenChange,
-  isFavorite,
-  onAddToFavorites,
-  onRemoveFromFavorites,
-  showQuickAddFavorite,
+  onAddToFavorites
 }: WeatherDetailsProps) {
-  const { isCelsius, setIsCelsius, convertTemperature } = useWeather()
-
+  const [isCelsius, setIsCelsius] = useState(true)
   if (!weather) return null
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-[90vw] sm:max-w-3xl p-4 sm:p-6">
@@ -46,14 +38,14 @@ export function WeatherDetails({
           <div className="flex justify-between items-start">
             <div>
               <DialogTitle className="text-xl sm:text-2xl text-blue-300">
-                {weather.name}, {weather.sys.country}
+                {weather.name}, {weather.country}
               </DialogTitle>
               <DialogDescription className="text-sm sm:text-lg font-medium text-gray-300">
-                {weather.weather[0].description.charAt(0).toUpperCase() + weather.weather[0].description.slice(1)}
+                {weather.condition.charAt(0).toUpperCase() + weather.condition.slice(1)}
               </DialogDescription>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              {showQuickAddFavorite && (
+              {!weather.isFavorite && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -75,15 +67,11 @@ export function WeatherDetails({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
             <div className="flex items-center">
               <span className="text-4xl sm:text-6xl font-bold text-blue-300">
-                {Math.round(convertTemperature(weather.main.temp))}°{isCelsius ? "C" : "F"}
+                {isCelsius ? weather.tempC : weather.tempF}°{isCelsius ? "C" : "F"}
               </span>
               <div className="ml-2 sm:ml-4 text-xs sm:text-sm text-gray-300">
                 <div>
-                  Sensación: {Math.round(convertTemperature(weather.main.feels_like))}°{isCelsius ? "C" : "F"}
-                </div>
-                <div>
-                  Mín: {Math.round(convertTemperature(weather.main.temp_min))}°{isCelsius ? "C" : "F"} / Máx:{" "}
-                  {Math.round(convertTemperature(weather.main.temp_max))}°{isCelsius ? "C" : "F"}
+                  Sensación: {isCelsius ? weather.feelslikeC : weather.feelslikeF}°{isCelsius ? "C" : "F"}
                 </div>
               </div>
             </div>
@@ -104,11 +92,7 @@ export function WeatherDetails({
               <div>
                 <span className="text-xs sm:text-sm text-gray-400 block">Hora local</span>
                 <span className="text-sm sm:font-medium text-white">
-                  {new Date((weather.dt + weather.timezone) * 1000).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZone: "UTC",
-                  })}
+                  {weather.hour}
                 </span>
               </div>
             </div>
@@ -117,7 +101,7 @@ export function WeatherDetails({
               <div>
                 <span className="text-xs sm:text-sm text-gray-400 block">Fecha</span>
                 <span className="text-sm sm:font-medium text-white">
-                  {new Date((weather.dt + weather.timezone) * 1000).toLocaleDateString([], {
+                  {new Date(weather.date).toLocaleDateString([], {
                     day: "numeric",
                     month: "short",
                     timeZone: "UTC",
@@ -131,41 +115,22 @@ export function WeatherDetails({
             <div className="flex flex-col items-center p-2 sm:p-3 bg-gray-700/50 rounded-lg">
               <Cloud className="h-6 w-6 sm:h-8 sm:w-8 text-blue-300 mb-1" />
               <span className="text-xs sm:text-sm text-gray-400">Nubes</span>
-              <span className="text-sm sm:font-medium text-white">{weather.clouds.all}%</span>
+              <span className="text-sm sm:font-medium text-white">{weather.cloud}%</span>
             </div>
             <div className="flex flex-col items-center p-2 sm:p-3 bg-gray-700/50 rounded-lg">
               <Droplets className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400 mb-1" />
               <span className="text-xs sm:text-sm text-gray-400">Humedad</span>
-              <span className="text-sm sm:font-medium text-white">{weather.main.humidity}%</span>
+              <span className="text-sm sm:font-medium text-white">{weather.humidity}%</span>
             </div>
             <div className="flex flex-col items-center p-2 sm:p-3 bg-gray-700/50 rounded-lg">
               <Wind className="h-6 w-6 sm:h-8 sm:w-8 text-gray-300 mb-1" />
               <span className="text-xs sm:text-sm text-gray-400">Viento</span>
-              <span className="text-sm sm:font-medium text-white">{weather.wind.speed} m/s</span>
+              <span className="text-sm sm:font-medium text-white">{weather.windKph} K/h</span>
             </div>
           </div>
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-2 pt-2">
-          {isFavorite ? (
-            <Button
-              variant="outline"
-              onClick={onRemoveFromFavorites}
-              className="bg-gray-700 border-gray-600 hover:bg-gray-600 text-sm"
-            >
-              <StarOff className="h-4 w-4 mr-2 text-gray-400" />
-              Quitar de favoritos
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={onAddToFavorites}
-              className="bg-gray-700 border-gray-600 hover:bg-gray-600 text-sm"
-            >
-              <Star className="h-4 w-4 mr-2 text-yellow-400" />
-              Añadir a favoritos
-            </Button>
-          )}
           <DialogClose asChild>
             <Button variant="ghost" className="bg-gray-700 hover:bg-gray-600 text-sm">
               Cerrar

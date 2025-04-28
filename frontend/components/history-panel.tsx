@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sheet"
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
 
+
 interface HistoryPanelProps {
   history: HistoryItem[]
   onSelectHistoryItem: (item: HistoryItem) => void
@@ -108,7 +109,7 @@ export function HistoryPanel({ history, onSelectHistoryItem, onRemoveHistoryItem
                           <div>
                             <div className="font-medium">{item.city}</div>
                             <div className="text-sm text-gray-400">{item.country}</div>
-                            <div className="text-xs text-gray-500">{new Date(item.timestamp).toLocaleString()}</div>
+                            <div className="text-xs text-gray-500">{new Date(item.createdAt).toLocaleString()}</div>
                           </div>
                         </div>
                         <div className="flex items-center">

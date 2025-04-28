@@ -1,64 +1,64 @@
 "use client"
 
 import { useState } from "react"
-import { mockWeatherData } from "@/data/mock-data"
 import type { WeatherData } from "@/types"
-
+import { showToast } from "nextjs-toast-notify";
+import axios from "axios"
 
 export function useWeather() {
+  const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/weather`
   const [city, setCity] = useState("")
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
   const [isCelsius, setIsCelsius] = useState(true)
+  const [openWeatherDetails, setOpenWeatherDetails] = useState(false)
 
-  const fetchWeather = async (cityName: string = city, onSuccess?: (data: WeatherData) => void) => {
+  const fetchWeather = async (cityName: string = city, id?:number) => {
     if (!cityName.trim()) return
-
     setLoading(true)
-    setError("")
-
+    const token = localStorage.getItem("accesToken")
     try {
-      // Simulación de respuesta con datos mock
-      let mockData = null
-
-      const cityLower = cityName.toLowerCase()
-
-      if (cityLower.includes("madrid")) {
-        mockData = mockWeatherData.madrid
-      } else if (cityLower.includes("barcelona")) {
-        mockData = mockWeatherData.barcelona
-      } else if (cityLower.includes("nueva york") || cityLower.includes("new york")) {
-        mockData = mockWeatherData.newyork
-      } else if (cityLower.includes("mexico") || cityLower.includes("méxico")) {
-        mockData = mockWeatherData.mexico
-      } else if (cityLower.includes("buenos aires")) {
-        mockData = mockWeatherData.buenosaires
-      } else {
-        // Si no coincide con ninguna ciudad mock, usar Madrid como fallback
-        mockData = { ...mockWeatherData.madrid }
-        mockData.name = cityName
-        // Actualizar algunos valores para que parezca diferente
-        mockData.main.temp = Math.round(15 + Math.random() * 15)
-        mockData.main.feels_like = mockData.main.temp - 1 + Math.random() * 2
-        mockData.main.humidity = Math.round(40 + Math.random() * 40)
-        mockData.wind.speed = Math.round(10 * (1 + Math.random() * 5)) / 10
-        mockData.dt = Math.floor(Date.now() / 1000)
-      }
-
-      // Actualizar la hora actual
-      mockData.dt = Math.floor(Date.now() / 1000)
-
-      // Simular un retraso para que parezca una llamada real
-      setTimeout(() => {
-        setWeather(mockData)
-        setLoading(false)
-        onSuccess?.(mockData)
-      }, 800)
-    } catch (err) {
-      setError("Error al obtener datos del clima. Intente con otra ciudad.")
-      setWeather(null)
+      const response:any = await axios.get(baseUrl, {
+        params: {
+          city: cityName,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      })
+      showToast.success(response.data.message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
       setLoading(false)
+      setWeather({
+        ...response.data.data,
+        ...(id ? { id } : {}),
+      })
+      setOpenWeatherDetails(true)
+      return response.data.data
+    } catch (error: any) {
+      setLoading(false)
+      showToast.info(error.response.data.message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
+      showToast.error(error.response.data.error,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
     }
   }
 
@@ -70,8 +70,36 @@ export function useWeather() {
     }
   }
 
-  const isNightTime = (sunrise: number, sunset: number, current: number) => {
-    return current < sunrise || current > sunset
+  const autocompleteCities = async (query: string) => {
+    const token = localStorage.getItem("accesToken")
+    try{
+      const response:any = await axios.get(`${baseUrl}/autocomplete`, {
+        params: {
+          query,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      })
+      return response.data.data
+    } catch (error:any) {
+      showToast.info(error.response.data.message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
+      showToast.error(error.response.data.error,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
+    }
   }
 
   return {
@@ -79,11 +107,13 @@ export function useWeather() {
     setCity,
     weather,
     loading,
-    error,
     isCelsius,
     setIsCelsius,
     fetchWeather,
     convertTemperature,
-    isNightTime,
+    autocompleteCities,
+    openWeatherDetails,
+    setOpenWeatherDetails,
+    setWeather
   }
 }

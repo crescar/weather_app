@@ -2,82 +2,140 @@
 
 import type { UserType } from "@/types"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { LoginSchemaType, RegisterSchemaType } from "@/lib/schemas/authSchemas"
-
+import { showToast } from "nextjs-toast-notify";
+import axios from "axios"
 
 export function useAuth() {
+  const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth`
   const router = useRouter()
   const [user, setUser] = useState<UserType | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Verificar autenticación al cargar
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUser = localStorage.getItem("weatherAppUser")
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser) as UserType
-          if (userData.isAuthenticated) {
-            setUser(userData)
-            setIsLoading(false)
-            return
-          }
-        } catch (e) {
-          console.error("Error parsing user data:", e)
-        }
-      }
-
-
-      router.push("/auth")
+    const storedUser = localStorage.getItem("weatherAppUser")
+    const token = localStorage.getItem("accesToken")
+    if (storedUser && token) {
+      const parsedUser = JSON.parse(storedUser)
+      setUser({
+        email: parsedUser.email,
+        name: parsedUser.name,
+        isAuthenticated: true,
+      })
     }
-    const timer = setTimeout(checkAuth, 500)
-    return () => clearTimeout(timer)
   }, [])
 
-  const login = (userData: LoginSchemaType) => {
-
-    setIsLoading(true)
-    const authUser: UserType = {
-      ...userData,
-      isAuthenticated: true,
-    }
-
-    localStorage.setItem("weatherAppUser", JSON.stringify(authUser))
-    setUser(authUser)
-    setTimeout(() => {
+  const login = async (userData: LoginSchemaType) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${baseUrl}/login`, userData)
+      const message = response.data.message
+      const data = response.data.data
+      localStorage.setItem("accesToken", data.token)
+      localStorage.setItem("weatherAppUser", JSON.stringify({
+        email: data.email,
+        name: data.name,
+      }))
+      document.cookie = `weatherAppUser=${JSON.stringify(data)}; path=/; SameSite=Strict; Secure`
+      setUser({
+        email: data.email,
+        name: data.name,
+        isAuthenticated: true,
+      })
       setIsLoading(false)
+      showToast.success(message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
       router.push("/")
+    }catch (error:any) {
+      setIsLoading(false)
+      showToast.info(error.response.data.message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
+      showToast.error(error.response.data.error,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
     }
-    , 2000)
-    
   }
 
   const logout = () => {
-    localStorage.removeItem("weatherAppUser")
     setUser(null)
-    router.push("/login")
+    localStorage.removeItem("weatherAppUser")
+    localStorage.removeItem("accesToken")
+    document.cookie = "weatherAppUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict; Secure"
+    showToast.success("Logout exitoso",{
+      duration: 4000,
+      progress: true,
+      position: "top-right",
+      transition: "bounceIn",
+      icon: '',
+      sound: true,
+    })
+    router.push("/auth")
   }
 
-  const singUp = (userData: RegisterSchemaType) => {
-
-    setIsLoading(true)
-    setTimeout(() => {
+  const singUp = async (userData: RegisterSchemaType) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${baseUrl}/register`, userData)
+      const message = response.data.message
+      const data = response.data.data
+      localStorage.setItem("accesToken", data.token)
+      localStorage.setItem("weatherAppUser", JSON.stringify({
+        email: data.email,
+        name: data.name,
+      }))
+      document.cookie = `weatherAppUser=${JSON.stringify(data)}; path=/; SameSite=Strict; Secure`
+      setUser({
+        email: data.email,
+        name: data.name,
+        isAuthenticated: true,
+      })
       setIsLoading(false)
-    }
-    , 1000)
-
-    const authUser: UserType = {
-      ...userData,
-      isAuthenticated: true,
-    }
-    localStorage.setItem("weatherAppUser", JSON.stringify(authUser))
-    setUser(authUser)
-    setTimeout(() => {
-      setIsLoading(false)
+      showToast.success(message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
       router.push("/")
+    } catch (error:any) {
+      setIsLoading(false)
+      showToast.info(error.response.data.message,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
+      showToast.error(error.response.data.error,{
+        duration: 4000,
+        progress: true,
+        position: "top-right",
+        transition: "bounceIn",
+        icon: '',
+        sound: true,
+      })
     }
-    , 2000)
   }
 
   return {

@@ -1,22 +1,20 @@
 // Tipo para los favoritos
 export interface Favorite {
   id: string
+  cityId?: number
   city: string
-  state: string | null
-  country: string | null
-  countryCode: string | null
-  countryName: string | null
+  country: string
+  region: string
 }
 
 // Tipo para los elementos del historial
 export interface HistoryItem {
   id: string
+  cityId?: number
   city: string
-  state: string | null
-  country: string | null
-  countryCode: string | null
-  countryName: string | null
-  timestamp: number
+  country: string
+  region: string
+  createdAt: string
 }
 
 // Tipo para las ciudades principales
@@ -45,47 +43,20 @@ export interface UserType {
 
 // Tipo para los datos del clima
 export interface WeatherData {
-  coord: {
-    lon: number
-    lat: number
-  }
-  weather: {
-    id: number
-    main: string
-    description: string
-    icon: string
-  }[]
-  base: string
-  main: {
-    temp: number
-    feels_like: number
-    temp_min: number
-    temp_max: number
-    pressure: number
-    humidity: number
-  }
-  visibility: number
-  wind: {
-    speed: number
-    deg: number
-  }
-  clouds: {
-    all: number
-  }
-  dt: number
-  sys: {
-    type: number
-    id: number
-    country: string
-    sunrise: number
-    sunset: number
-  }
-  timezone: number
-  id: number
+  id?: number
   name: string
-  cod: number
-  rain?: {
-    "1h"?: number
-    "3h"?: number
-  }
+  region: string
+  country: string
+  tempC: number
+  tempF: number
+  feelslikeC: number
+  feelslikeF: number
+  hour: string
+  date: string
+  condition: string
+  humidity: number
+  cloud: number
+  windKph: number
+  isFavorite: boolean
+  icon: string
 }

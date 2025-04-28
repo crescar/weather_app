@@ -32,7 +32,7 @@ export function FavoritesPanel({ favorites, onSelectFavorite, onRemoveFavorite }
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
 
   const handleDeleteClick = (e: React.MouseEvent, favoriteId: string) => {
-    e.stopPropagation() // Evitar que se active el favorito al hacer clic en eliminar
+    e.stopPropagation()
     setFavoriteToDelete(favoriteId)
     setIsConfirmDialogOpen(true)
   }
@@ -42,11 +42,6 @@ export function FavoritesPanel({ favorites, onSelectFavorite, onRemoveFavorite }
       onRemoveFavorite(favoriteToDelete)
       setFavoriteToDelete(null)
     }
-  }
-
-  const closeConfirmDialog = () => {
-    setIsConfirmDialogOpen(false)
-    setFavoriteToDelete(null)
   }
 
   return (
