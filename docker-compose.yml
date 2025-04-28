@@ -28,8 +28,6 @@ services:
   backend:
     ports:
       - "3000:3000"
-      - "80:3000"
-      - "443:3000"
     build: 
       context: .
       dockerfile: backend/Dockerfile
@@ -40,7 +38,18 @@ services:
     env_file: 'enviroments/.env'
     networks:
       - weader-app-network
-  
+  frontend:
+    ports:
+      - "4000:4000"
+    build: 
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: frontend
+    depends_on:
+      - backend
+    env_file: 'enviroments/.env'
+    networks:
+      - weader-app-network
 volumes:
   weader-app-db:
   redis-data:
