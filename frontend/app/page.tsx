@@ -1,5 +1,4 @@
 "use client"
-import { useEffect } from "react"
 import { Cloud } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -39,13 +38,25 @@ export default function WeatherApp() {
   }
 
   const handleSelectFavorite = async (favorite: Favorite) => {
-    favorite.cityId ? await fetchWeather(`id:${favorite.cityId}`) : await fetchWeather(favorite.city)
+    const response: any = favorite.cityId ? await fetchWeather(`id:${favorite.cityId}`) : await fetchWeather(favorite.city)
     setCity(favorite.city)
+    addToHistory(
+      response.name,
+      response.country,
+      response.region,
+      favorite.cityId
+    )
   }
 
   const handleSelectHistoryItem = async (history: HistoryItem) => {
-    history.cityId ? await fetchWeather(`id:${history.cityId}`) : await fetchWeather(history.city)
+    const response: any = history.cityId ? await fetchWeather(`id:${history.cityId}`) : await fetchWeather(history.city)
     setCity(history.city)
+    addToHistory(
+      response.name,
+      response.country,
+      response.region,
+      history.cityId
+    )
   }
 
   const handleAddToFavorites = () => {

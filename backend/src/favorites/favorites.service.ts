@@ -37,7 +37,7 @@ export class FavoritesService {
                     region:true,
                 }
             })
-            await this.cacheManager.set(`favorites-${userId}`, response ,60000)
+            await this.cacheManager.set(`favorites-${userId}`, response ,10000)
             return response
         } catch (error) {
             response.statusCode = 400
