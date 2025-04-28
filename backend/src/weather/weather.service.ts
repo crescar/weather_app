@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { StandardResponse } from '@app/common';
 import { AutocompleteResponse } from './responses/autocomple.response';
 import { WeatherResponse } from './responses/weather.response';
-import { FavoritesService } from 'src/favorites/favorites.service';
+import { FavoritesService } from '../favorites/favorites.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
