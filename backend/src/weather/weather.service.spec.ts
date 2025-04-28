@@ -27,7 +27,8 @@ describe('WeatherService', () => {
     humidity: 10,
     cloud: 10,
     windKph: 10,
-    isFavorite: false
+    isFavorite: false,
+    icon: 'https://example.com/icon.png'
   }
   const mockAutocomplete = new StandardResponse<AutocompleteResponse[]>(200,"Información obtenida correctamente")
   mockAutocomplete.data = [
@@ -63,7 +64,8 @@ describe('WeatherService', () => {
                                         feelslike_c: 25,
                                         feelslike_f: 77,
                                         condition: {
-                                            text: 'Sunny'
+                                            text: 'Sunny',
+                                            icon: 'https://example.com/icon.png'
                                         },
                                         humidity: 10,
                                         cloud: 10,

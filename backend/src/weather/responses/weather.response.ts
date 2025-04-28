@@ -13,4 +13,5 @@ export class WeatherResponse {
   cloud: number;
   windKph: number;
   isFavorite: boolean;
+  icon: string;
 }

@@ -47,7 +47,8 @@ export class WeatherService {
         humidity: data.current.humidity,
         cloud: data.current.cloud,
         windKph: data.current.wind_kph,
-        isFavorite: isFavorite
+        isFavorite: isFavorite,
+        icon: data.current.condition.icon
       }
       response.data = weather
       await this.cacheManager.set(`${userId}-${city}`, weather,60000)
