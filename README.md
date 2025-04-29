@@ -107,6 +107,19 @@ Este modo es ideal para desarrollar y depurar. Ejecutarás el backend y el front
     * **Frontend:** Abre tu navegador en `http://localhost:4000` (o el puerto que hayas configurado).
     * **Backend:** Accede a la API en `http://localhost:3000` (o el puerto que hayas configurado). Puedes acceder a la documentación de la API en `http://localhost:3000/api` (o el puerto que hayas configurado).
 
+6.  **Acceder a la Base de Datos y Redis:**
+    Puedes acceder a la base de datos PostgreSQL y Redis desde tu cliente preferido (ej. pgAdmin, DBeaver) usando las credenciales definidas en el archivo `.env` y los puertos expuestos por Docker Compose (por defecto `5432` para PostgreSQL y `6379` para Redis).
+    *   **Base de Datos:** `localhost:5432` (o el puerto que hayas configurado).
+    *   **Redis:** `localhost:6379` (o el puerto que hayas configurado).
+
+7. **Testing (Opcional):**
+    * **Backend:** Ejecuta las pruebas unitarias y de integración:
+        ```bash
+        # Desde el directorio del backend (ej. ./backend/)
+        pnpm run test:cov # Cobertura de pruebas
+        ```
+    
+
 ## Detener la Aplicación
 
 *   **Modo Desarrollo:**
