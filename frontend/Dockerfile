@@ -13,9 +13,8 @@ FROM base AS build
 WORKDIR /app
 COPY frontend ./
 COPY --from=dependencies /app/node_modules ./node_modules
-ENV NODE_ENV=production
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN pnpm build
 RUN pnpm prune --prod
 
