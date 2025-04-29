@@ -2,6 +2,8 @@
 
 Aplicación web que permite a los usuarios obtener información meteorológica en tiempo real para cualquier ciudad o ubicación. Consume datos de una API externa y utiliza caché para optimizar las respuestas.
 
+![Weather App Demo](gifDemo/demo.gif)
+
 ## Tecnologías Utilizadas
 
 *   **Backend:** NestJS (Node.js, TypeScript)
